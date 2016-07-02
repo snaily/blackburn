@@ -102,8 +102,10 @@ function render(state, mouse, screen, back) {
     }
   }
 
+ var origin = {x: screen.canvas.width/2, y: screen.canvas.height/2};
+
   for (var i = 0; i < state.steps; i++) {
-    step(state, mouse, {x: screen.canvas.width/2, y: screen.canvas.height/2}, 0.1);
+    step(state, mouse, origin, 0.1);
 
     if (!mouse.down) {
       back.lineCap = "round";
@@ -154,7 +156,7 @@ function render(state, mouse, screen, back) {
   //back.clearRect(0, 0, back.canvas.width, back.canvas.)
 
   Object.assign(state.lastMouse, mouse)
-  argumentsArray = Array.from(arguments);
+  var argumentsArray = Array.from(arguments);
   window.requestAnimationFrame(function () { render.apply(render, argumentsArray); });
 }
 
