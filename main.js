@@ -1,4 +1,8 @@
 function init(pendulumCount) {
+  if (location.hash == "") {
+    location.hash = "#3"
+  }
+
   screenElement = document.getElementById("screen");
   screenElement.width = document.body.clientWidth;
   screenElement.height = document.body.clientHeight;
@@ -122,7 +126,7 @@ function render(state, mouse, screen, back) {
     if (!mouse.down) {
       back.lineCap = "round";
       back.lineWidth = 1;
-      back.strokeStyle = "rgba(0, 0, 0, 0.2)"
+      back.strokeStyle = "rgba(0, 0, 0, 0.3)"
       back.beginPath();
       back.moveTo(state.lastPos.x, state.lastPos.y);
       back.lineTo(state.pendulums[state.pendulums.length-1].pos.x, state.pendulums[state.pendulums.length-1].pos.y);
