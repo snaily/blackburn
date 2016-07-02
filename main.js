@@ -18,6 +18,18 @@ function init(pendulumCount) {
   document.addEventListener("mouseup", function(event) {
     mouse.down = false;
   });
+  document.addEventListener("touchstart", function(event) {
+    mouse.down = true;
+  });
+  document.addEventListener("touchend", function(event) {
+    if (event.touches.length == 0) {
+      mouse.down = false;
+    }
+  });
+  document.addEventListener("touchmove", function(event) {
+    mouse.x = event.touches.item(0).pageX;
+    mouse.y = event.touches.item(0).pageY;
+  });
 
   pendulums = [];
   for (var i = 0; i < pendulumCount; i++) {
