@@ -1,4 +1,4 @@
-function init() {
+function init(pendulumCount) {
   screenElement = document.getElementById("screen");
   screenElement.width = document.body.clientWidth;
   screenElement.height = document.body.clientHeight;
@@ -19,14 +19,19 @@ function init() {
     mouse.down = false;
   });
 
+  pendulums = [];
+  for (var i = 0; i < pendulumCount; i++) {
+    pendulums.push({
+      pos: {x: screenElement.width/2, y: screenElement.height/2},
+      vel: {x: 0, y: 0}
+    });
+  }
+
   state = {
     lastMouse: {},
     lastPos: {x: screenElement.width/2, y: screenElement.height/2},
     //origin: {x: screenElement.width/2, y: screenElement.height/2},
-    primaryPos: {x: screenElement.width/2, y: screenElement.height/2},
-    primaryVel: {x: 0, y: 0},
-    secondaryPos: {x: screenElement.width/2, y: screenElement.height/2},
-    secondaryVel: {x: 0, y: 0},
+    pendulums: pendulums,
     steps: 10
   };
   Object.assign(state.lastMouse, mouse);
@@ -35,39 +40,52 @@ function init() {
 }
 
 function step(state, mouse, origin, dt) {
-  if (mouse.down) {
-    state.primaryVel.x += dt*0.25*(mouse.x - state.primaryPos.x)
-    state.primaryVel.y += dt*0.25*(mouse.y - state.primaryPos.y);
-    state.primaryVel.x -= dt*0.6 * state.primaryVel.x;
-    state.primaryVel.y -= dt*0.6 * state.primaryVel.y;
-  } else {
-    state.primaryVel.x += dt*0.02*(origin.x - state.primaryPos.x)
-    state.primaryVel.y += dt*0.02*(origin.y - state.primaryPos.y);
-    state.primaryVel.x += dt*0.05*(state.secondaryPos.x - state.primaryPos.x)
-    state.primaryVel.y += dt*0.05*(state.secondaryPos.y - state.primaryPos.y);
-    state.primaryVel.x -= dt*0.0001 * state.primaryVel.x;
-    state.primaryVel.y -= dt*0.0001 * state.primaryVel.y; 
+  for (var i = 0; i < state.pendulums.length; i++) {
+    if (i == 0) {
+      if (mouse.down) {
+        state.pendulums[0].vel.x += dt*0.25*(mouse.x - state.pendulums[0].pos.x);
+        state.pendulums[0].vel.y += dt*0.25*(mouse.y - state.pendulums[0].pos.y);
+        state.pendulums[0].vel.x -= dt*0.6 * state.pendulums[0].vel.x;
+        state.pendulums[0].vel.y -= dt*0.6 * state.pendulums[0].vel.y;
+      } else {
+        state.pendulums[0].vel.x += dt*0.01*(origin.x - state.pendulums[0].pos.x);
+        state.pendulums[0].vel.y += dt*0.01*(origin.y - state.pendulums[0].pos.y);
+      }
+    } else {
+      state.pendulums[i].vel.x += dt*0.05*(state.pendulums[i-1].pos.x - state.pendulums[i].pos.x)/i;
+      state.pendulums[i].vel.y += dt*0.05*(state.pendulums[i-1].pos.y - state.pendulums[i].pos.y)/i;
+    }
+    if (i < state.pendulums.length - 1) {
+      // If we're dragging with the mouse, don't pull it to the next in the chain
+      if (i != 0 || !mouse.down) {
+        state.pendulums[i].vel.x += dt*0.05*(state.pendulums[i+1].pos.x - state.pendulums[i].pos.x)/(i+1);
+        state.pendulums[i].vel.y += dt*0.05*(state.pendulums[i+1].pos.y - state.pendulums[i].pos.y)/(i+1);
+      }
+    }
+    // Damping
+    if (i == 0 && mouse.down) {
+      state.pendulums[i].vel.x -= dt*0.6 * state.pendulums[i].vel.x;
+      state.pendulums[i].vel.y -= dt*0.6 * state.pendulums[i].vel.y;
+    } else {
+      state.pendulums[i].vel.x -= dt*0.0001 * state.pendulums[i].vel.x;
+      state.pendulums[i].vel.y -= dt*0.0001 * state.pendulums[i].vel.y;
+    }
   }
 
-  state.secondaryVel.x += dt*0.05*(state.primaryPos.x - state.secondaryPos.x)
-  state.secondaryVel.y += dt*0.05*(state.primaryPos.y - state.secondaryPos.y);
-  state.secondaryVel.x -= dt*0.0001 * state.secondaryVel.x;
-  state.secondaryVel.y -= dt*0.0001 * state.secondaryVel.y;
 
-
-  state.primaryPos.x += dt*state.primaryVel.x;
-  state.primaryPos.y += dt*state.primaryVel.y;
-  state.secondaryPos.x += dt*state.secondaryVel.x;
-  state.secondaryPos.y += dt*state.secondaryVel.y;
+  for (var i = 0; i < state.pendulums.length; i++) {
+    state.pendulums[i].pos.x += dt*state.pendulums[i].vel.x
+    state.pendulums[i].pos.y += dt*state.pendulums[i].vel.y
+  }
 
   if (mouse.down) {
     if (!state.lastMouse.down) {
-      state.primaryVel = {x: 0, y: 0};
-      state.secondaryVel = {x: 0, y: 0};
-      state.primaryPos = {x: mouse.x, y: mouse.y};
-      state.primaryPos = {x: mouse.x, y: mouse.y};
-      state.secondaryPos = {x: mouse.x, y: mouse.y};
-      state.secondaryPos = {x: mouse.x, y: mouse.y};
+      for (var i = 0; i < state.pendulums.length; i++) {
+        state.pendulums[i].pos.x = mouse.x;
+        state.pendulums[i].pos.y = mouse.y;
+        state.pendulums[i].vel.x = 0;
+        state.pendulums[i].vel.y = 0;
+      }
     }
   }
 }
@@ -93,12 +111,12 @@ function render(state, mouse, screen, back) {
       back.strokeStyle = "rgba(0, 0, 0, 0.2)"
       back.beginPath();
       back.moveTo(state.lastPos.x, state.lastPos.y);
-      back.lineTo(state.primaryPos.x, state.primaryPos.y);
+      back.lineTo(state.pendulums[state.pendulums.length-1].pos.x, state.pendulums[state.pendulums.length-1].pos.y);
       //back.arc(mouse.x, mouse.y, 5, 0, 2*Math.PI);
       back.stroke();
     }
 
-    Object.assign(state.lastPos, state.primaryPos)
+    Object.assign(state.lastPos, state.pendulums[state.pendulums.length-1].pos)
   }
 
   /*back.globalAlpha = 0.1;
@@ -110,20 +128,17 @@ function render(state, mouse, screen, back) {
   screen.clearRect(0, 0, screen.canvas.width, screen.canvas.height)
 
   if (mouse.down) {
-    screen.fillStyle = "#000";
+    /*screen.fillStyle = "#000";
     screen.beginPath();
     screen.arc(mouse.x, mouse.y, 5, 0, 2*Math.PI);
-    screen.fill();
+    screen.fill();*/
 
-    screen.fillStyle = "#f0f";
-    screen.beginPath();
-    screen.arc(state.secondaryPos.x, state.secondaryPos.y, 5, 0, 2*Math.PI);
-    screen.fill();
-
-    screen.fillStyle = "#0ff";
-    screen.beginPath();
-    screen.arc(state.primaryPos.x, state.primaryPos.y, 5, 0, 2*Math.PI);
-    screen.fill();
+    for (var i = 0; i < state.pendulums.length; i++) {
+      screen.fillStyle = "#000";
+      screen.beginPath();
+      screen.arc(state.pendulums[i].pos.x, state.pendulums[i].pos.y, 5, 0, 2*Math.PI);
+      screen.stroke();
+    }
   } else {
     screen.drawImage(back.canvas, 0, 0)
   }
@@ -143,4 +158,5 @@ function render(state, mouse, screen, back) {
   window.requestAnimationFrame(function () { render.apply(render, argumentsArray); });
 }
 
-document.addEventListener("DOMContentLoaded", init);
+document.addEventListener("DOMContentLoaded", function() { init(location.hash.slice(1) || 3); } );
+window.addEventListener("hashchange", function() { location.reload(true); });

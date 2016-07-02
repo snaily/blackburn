@@ -4,6 +4,7 @@
 	<meta charset=utf-8>
 	<title>Blackburn pendulum</title>
 	<script src="main.js"></script>
+	<link href='https://fonts.googleapis.com/css?family=Lato:300,700' rel='stylesheet' type='text/css'>
 	<style>
 
 html, body {
@@ -12,9 +13,46 @@ html, body {
 	height: 100%;
 }
 
+body {
+	background-image: url("background.jpg"); /* https://www.flickr.com/photos/danielweber/1064650219/ */
+	background-size: cover;
+	background-position: center;
+
+	font-family: 'Lato', sans-serif;
+	font-size: small;
+}
+
+#footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    padding: 0.5em;
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+}
+
+a, a:active, a:visited {
+	color: white;
+}
+
+a:target {
+	font-weight: 700;
+	text-decoration: none;
+}
+
 	</style>
 </head>
 <body style="margin: 0, padding: 0">
 	<canvas id='screen'></canvas>
+	<div id="footer"><strong>Blackburn Pendulum</strong>.
+	Drag and release.
+	Pendulum chain length:
+	<a id="2" href="#2">2</a>
+	<a id="3" href="#3">3</a>
+	<a id="5" href="#5">5</a>
+	<a id="10" href="#10">10</a>
+	<a id="100" href="#100">100</a>.
+	Code on <a href="https://github.com/snaily/blackburn">github</a>.
+	Background by <a href="https://www.flickr.com/photos/danielweber/1064650219/">Daniel Weber</a>, used under <a href="https://creativecommons.org/licenses/by-nc/2.0/">CC BY-NC 2.0</a>.</div>
 </body>
 </html>
